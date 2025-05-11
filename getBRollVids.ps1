@@ -1,39 +1,57 @@
 <#
     Name: getBRollVids.ps1
-    Purpose: get b-roll videos for an NPS Park via public data API (using park code)
-    Author: Your mom ;) kidding obviously, Happy Mother's Day btw
-
-    Note: this script requires an API key before it can be used. Get yours at https://www.nps.gov/subjects/developer/get-started.htm
+    Purpose: Get b-roll videos for an NPS Park via public data API (using park code)
+    Author: Andrew Mills/Chat GPT 4.x collaboration 
 #>
 
-param([string]$parkCode)
+param(
+    [ValidatePattern('^[A-Z]{4}$')]
+    [string]$parkCode
+)
+
+$apiKey = $env:NPS_API_KEY
+if (-not $apiKey) {
+    Write-Error "Error: API key not found. Set the 'NPS_API_KEY' environment variable."
+    exit 1
+}
 
 $parkCode = $parkCode.ToUpper()
 
-if (-not $parkCode -or $parkCode -notmatch '^[A-Z]{4}$') {
-    Write-Error "Error: Provide a valid 4-letter park code (e.g., DENA, YELL). Letters only."
-    exit 1
-}
-
-$apiKey = "PLS_REGISTER_YOUR_OWN_APIKEY"
 $url1 = "https://developer.nps.gov/api/v1/multimedia/videos?parkCode=$parkCode&limit=1&api_key=$apiKey"
-$response1 = Invoke-RestMethod -Uri $url1 -Method Get
-$total = $response1.total
+
+try {
+    $response1 = Invoke-RestMethod -Uri $url1 -Method Get
+} catch {
+    Write-Error "Failed to fetch data from the API. Error: $_"
+    exit 2
+}
 
 if (-not $response1.total -or $response1.total -eq 0) {
     Write-Host "No videos found for park code '$parkCode'. Check that it's valid."
-    exit 1
+    exit 0
 }
 
-$url2 = "https://developer.nps.gov/api/v1/multimedia/videos?parkCode=$parkCode&limit=$total&api_key=$apiKey"
-$response2 = Invoke-RestMethod -Uri $url2 -Method Get
-$allVideos = $response2.data
+$url2 = "https://developer.nps.gov/api/v1/multimedia/videos?parkCode=$parkCode&limit=$($response1.total)&api_key=$apiKey"
 
-$bRollVids = $allVideos | Where-Object { $_.isBRoll -eq $true }
+try {
+    $response2 = Invoke-RestMethod -Uri $url2 -Method Get
+} catch {
+    Write-Error "Failed to fetch data from the API. Error: $_"
+    exit 2
+}
+
+$allVideos = $response2.data
+$bRollVids = $allVideos | Where-Object { $_.isBRoll -eq $true -and $_.title -and $_.description -and $_.permalinkURL }
+
+if (-not $bRollVids) {
+    Write-Host "No b-roll videos found for park code '$parkCode'."
+    exit 0
+}
 
 $bRollVids | ForEach-Object {
-    "Title: $($_.title)"
-    "Description: $($_.description)"
-    "Permalink: $($_.permalinkURL)"
-    ""
-}
+    [PSCustomObject]@{
+        Title       = $_.title
+        Description = $_.description
+        Permalink   = $_.permalinkURL
+    }
+} | Format-Table -AutoSize
