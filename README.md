@@ -1,28 +1,53 @@
-# NPS_broll_videos
-quick &amp; dirty Powershell script to get b-roll videos for an NPS park by park code (e.g. DENA, YELL) thru public data api
+# getBRollVids.ps1
 
-## Note:
-This script requires an API key before it can be used. Get yours at https://www.nps.gov/subjects/developer/get-started.htm.
+Get **b-roll video metadata** for a U.S. National Park from the [National Park Service API](https://www.nps.gov/subjects/developer/api-documentation.htm), using its official four-letter park code.
 
-## Usage:
+## What It Does
 
-In Windows PowerShell, invoke the script with the four letter park code you're trying to find b-roll videos for.
-```
-./getBRollVids.ps1 DENA
-```
-If DENA currently has any b-roll videos available, you'll see something like this in the console output:
-```
-Title: Sheep Gap (No Audio)
+- Queries the NPS public API using the provided park code
+- Filters the returned videos for b-roll (`isBRoll: true`)
+- Outputs Title, Description, and Permalink for each match
+- Displays results in a readable table format on the console
+- Supports output redirection to a file via `>` (e.g., `> output.txt`)
 
-Description: In this short clip, a band of ewes and lambs race across the road to reach 
-high ground. Sheep are particularly sensitive to traffic as they move from lambing grounds (generally north of the road) to steeper protective terrain (generally south of the road). Maintaining gaps in traffic ("sheep gaps") preserves these seasonal migration patterns, without which fewer sheep would be visible for visitor enjoyment. Sheep gaps benefit wildlife and Denali visitors alike!
+## Requirements
 
-Permalink: https://www.nps.gov/media/video/view.htm?id=DE34968C-57B3-4C58-B14B-A3FF00E2D7D5
-```
+- PowerShell 5.1+ (Windows) or PowerShell Core 7+ (cross-platform)
+- Internet access
+- A valid NPS API key
 
-If you need to save the results in a textfile, you can do so via the redirection operator in PowerShell.
+## Setup
 
-```
-./getBRollVids.ps1 YELL > results.txt
+Set your API key as an environment variable:
+
+```powershell
+$env:NPS_API_KEY = "your_actual_api_key"
 ```
 
+For persistent use on Windows:
+
+```powershell
+[Environment]::SetEnvironmentVariable("NPS_API_KEY", "your_actual_api_key", "User")
+```
+
+## Usage
+
+```powershell
+.\getBRollVids.ps1 DENA
+```
+
+Or redirect output to a file:
+
+```powershell
+.\getBRollVids.ps1 DENA > dena_videos.txt
+```
+
+## Notes
+
+- The script validates the park code to ensure it's exactly four letters (case-insensitive).
+- Invalid or unknown park codes will show a helpful error and exit.
+- If no b-roll videos are found, the script exits gracefully with a message.
+
+## Author
+
+Andrew (with an assist from ChatGPT and a side of mom jokes)
