@@ -23,6 +23,6 @@ Permalink: https://www.nps.gov/media/video/view.htm?id=DE34968C-57B3-4C58-B14B-A
 If you need to save the results in a textfile, you can do so via the redirection operator in PowerShell.
 
 ```
-./getBRollVids.ps1 YELL
+./getBRollVids.ps1 YELL > results.txt
 ```
 
