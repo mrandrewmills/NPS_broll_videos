@@ -49,9 +49,8 @@ if (-not $bRollVids) {
 }
 
 $bRollVids | ForEach-Object {
-    [PSCustomObject]@{
-        Title       = $_.title
-        Description = $_.description
-        Permalink   = $_.permalinkURL
-    }
-} | Format-Table -AutoSize
+    "Title: $($_.title)"
+    "Description: $($_.description)"
+    "Permalink: $($_.permalinkURL)"
+    ""
+}
