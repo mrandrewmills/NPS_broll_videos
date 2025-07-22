@@ -9,6 +9,11 @@ param(
     [string]$parkCode
 )
 
+if (-not $parkCode) {
+    Write-Error "Error: No park code provided. Please run the script with a valid 4-letter park code."
+    exit 1
+}
+
 $apiKey = $env:NPS_API_KEY
 if (-not $apiKey) {
     Write-Error "Error: API key not found. Set the 'NPS_API_KEY' environment variable."
